@@ -1,6 +1,7 @@
 package com.redhat.coolstore;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.json.Json;
@@ -16,6 +17,8 @@ import javax.ws.rs.ext.Provider;
 
 import org.jboss.resteasy.annotations.jaxrs.PathParam;
 
+import io.micrometer.core.instrument.MeterRegistry;
+
 @Path("/services/inventory")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -23,12 +26,16 @@ public class InventoryResource {
 
     @GET
     public List<Inventory> getAll() {
+        registry.counter("inventory.performedChecksAll.counter").increment();
+        registry.timer("inventory.performedChecksAll.timer").record(3000, TimeUnit.MILLISECONDS);
         return Inventory.listAll();
     }
 
     @GET
-    @Path("/{itemId}")
+    @Path("{itemId}")
     public List<Inventory> getAvailability(@PathParam String itemId) {
+        registry.counter("inventory.performedChecksAvail.counter").increment();
+        registry.timer("inventory.checksTimerAvail.timer").record(3000, TimeUnit.MILLISECONDS);
         return Inventory.<Inventory>streamAll()
         .filter(p -> p.itemId.equals(itemId))
         .collect(Collectors.toList());
@@ -59,5 +66,11 @@ public class InventoryResource {
         int len = location.length();
         String lastLetter = location.substring(len-1);
         return lastLetter;
+    }
+
+    private final MeterRegistry registry;
+
+    InventoryResource(MeterRegistry registry) {
+        this.registry = registry;
     }
 }
