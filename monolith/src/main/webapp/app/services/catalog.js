@@ -15,7 +15,7 @@ angular.module("app")
 		}
 	}
 
-	baseUrl="http://REPLACEURL/services/products";
+	baseUrl="http://catalog-springboot-user7-catalog.apps.cluster-mn2hp.mn2hp.sandbox1414.opentlc.com/services/products";
 
 	factory.getProducts = function() {
 		var deferred = $q.defer();
